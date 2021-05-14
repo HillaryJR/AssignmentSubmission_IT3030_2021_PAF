@@ -32,7 +32,7 @@ public class Product {
 	
 	
 	/**********************Insert Product*****************************/
-	public String insertProduct(String productCode,String productName, String productPrice, String productDesc,String productCat, String productQty){
+	public String insertProduct(String productName, String productPrice, String productDesc,String productCat, String productQty){
 		String output = "";
 		
 	 try{
@@ -44,6 +44,14 @@ public class Product {
 		 }
 	 
 		 
+			//Preparing a CallableStatement to call a function
+			 CallableStatement cstmt = con.prepareCall("{? = call getProductCode()}");
+			 //Registering the out parameter of the function (return type)
+			 cstmt.registerOutParameter(1, Types.CHAR);
+			 //Executing the statement
+			 cstmt.execute();
+			 String productCode = cstmt.getString(1);
+		
 		 	// create a prepared statement
 		 	String query = "insert into product (`productId`,`productCode`,`productName`,`productPrice`,`productDesc`,`productCat`,`productQty`)"
 		 			+ " values (?, ?, ?, ?, ?, ?, ?)";
@@ -63,14 +71,11 @@ public class Product {
 		 	// execute the statement
 		 	preparedStmt.execute();
 		 	con.close();
-		 	
-		 	String newItems = readProduct();
-		 	 output = "{\"status\":\"success\", \"data\": \"" +
-		 	 newItems + "\"}"; 
+		 	output = "Product details Inserted successfully";
 		 	 
 	 }catch (Exception e){
 		 
-		 output = "{\"status\":\"error\", \"data\": \"Error while inserting the item.\"}";
+		 	 output = "Error while inserting the product";
 		 	 System.err.println(e.getMessage());
 		 	}
 		 	
@@ -104,8 +109,7 @@ public class Product {
 						"<th>Product Price</th>" +
 						"<th>Product Description</th>" +
 						"<th>Product Category</th>" +
-						"<th>Product Quantity</th>"
-						+ "<th>Update</th><th>Remove</th></tr>";
+						"<th>Product Quantity</th></tr>";
 
 					 String query = "select * from product";
 					 
@@ -116,8 +120,7 @@ public class Product {
 					 // iterate through the rows in the result set
 					 while (rs.next())
 					 {
-						 
-						 String productId = rs.getString("productId");
+						
 						 String productCode = rs.getString("productCode");
 						 String productName = rs.getString("productName");
 						 String productPrice = Double.toString(rs.getDouble("productPrice"));
@@ -131,17 +134,12 @@ public class Product {
 						 output += "<td>" + productPrice + "</td>";
 						 output += "<td>" + productDesc + "</td>";
 						 output += "<td>" + productCat + "</td>";
-						 output += "<td>" + productQty + "</td>";
+						 output += "<td>" + productQty + "</td></tr>";
 						 
 						 
-						// buttons
-						 output += "<td><input name='btnUpdate' type='button' value='Update' "
-						 + "class='btnUpdate btn btn-secondary' data-productid='" + productId + "'></td>"
-						 + "<td><input name='btnRemove' type='button' value='Remove' "
-						 + "class='btnRemove btn btn-danger' data-productid='" + productId + "'></td></tr>";
-						  }
+						 
 						
-					 
+					 }
 					 con.close();
 					
 					// Complete the html table
@@ -160,7 +158,7 @@ public class Product {
 	
 	
 	/**********************Update Product*****************************/
-	public String updateProduct(String ID, String productCode, String productName, String productPrice, String productDesc,String productCat,String productQty)
+	public String updateProduct(String productId, String productCode, String productName, String productPrice, String productDesc,String productCat,String productQty)
 	{
 		 String output = "";
 		 
@@ -184,17 +182,16 @@ public class Product {
 				 preparedStmt.setString(4, productDesc);
 				 preparedStmt.setString(5, productCat);
 				 preparedStmt.setInt(6, Integer.parseInt(productQty));
-				 preparedStmt.setInt(7, Integer.parseInt(ID));
+				 preparedStmt.setInt(7, Integer.parseInt(productId));
 				 
 				 // execute the statement
 				 preparedStmt.execute();
 				 con.close();
-				 String newProducts = readProduct();
-				 output = "{\"status\":\"success\", \"data\": \"" +newProducts + "\"}";
+				 output = "Product details Updated successfully";
 		 
 		 }catch (Exception e){
 			 
-			 output = "{\"status\":\"error\", \"data\":\"Error while updating the product.\"}";
+			 output = "Error while updating the product";
 			 System.err.println(e.getMessage());
 		 
 		 }
@@ -228,12 +225,11 @@ public class Product {
 			 preparedStmt.execute();
 			 con.close();
 			 
-			 String newProducts = readProduct();
-			 output = "{\"status\":\"success\", \"data\": \"" +newProducts + "\"}"; 
+			 output = "Product Deleted successfully";
 		
 		}catch (Exception e){
 			
-			output = "{\"status\":\"error\", \"data\":\"Error while deleting the products.\"}";
+			output = "Error while deleting the product.";
 			System.err.println(e.getMessage());
 			
 		}
